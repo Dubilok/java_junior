@@ -34,7 +34,7 @@ public class Main {
                 + "'Average Salary' -> write '3'\n"
                 + "'Count of Employers' -> write '4'\n"
                 + "'Search by Template' -> write '5'\n"
-                + "'Exit' -> write '0'");
+                + "'Exit' -> write '0'\n");
 
 
         String str;
