@@ -1,29 +1,29 @@
 package models.dao;
 
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.ArrayList;
 
 public class UniversityDaoImpl implements UniversityDao {
 
     //language=SQL
-    private final String SQL_HEAD_OF_DEPARTMANT = "SELECT a.fullName FROM employers a, departments b WHERE a.id = b.headId AND b.departmentName = ?";
+    private final String SQL_HEAD_OF_DEPARTMENT = "SELECT a.fullName FROM employers a, departments b WHERE a.id = b.headId AND b.departmentName = ?";
 
     //language=SQL
-    private final String SQL_DEPARTMANT_STATISTIC = "SELECT a.name ,count(*) as 'count' FROM degreeNames a, employers b, appointments c, departments d" +
+    private final String SQL_DEPARTMENT_STATISTIC = "SELECT a.name ,count(*) as 'count' FROM degreeNames a, employers b, appointments c, departments d" +
                                                     " WHERE b.degreeId = a.id AND d.departmentName = ? AND c.departmentId = d.id AND c.employerId = b.id GROUP BY b.degreeId";
 
     //language=SQL
-    private final String SQL_AVARAGE_SALARY_OF_DEPARTMANT = "SELECT AVG(a.salary) as 'average' from employers a, departments b, appointments c" +
+    private final String SQL_AVERAGE_SALARY_OF_DEPARTMENT = "SELECT AVG(a.salary) as 'average' from employers a, departments b, appointments c" +
                                                             " WHERE a.id = c.employerId AND b.departmentName = ? AND b.id = c.departmentId";
 
     //language=SQL
-    private final String SQL_COUNT_OF_EMPLOYEERS = "SELECT count(*) as 'count' FROM employers b, appointments c, departments d where d.departmentName = ? AND c.departmentId = d.id AND b.id = c.employerId";
+    private final String SQL_COUNT_OF_EMPLOYERS = "SELECT count(*) as 'count' FROM appointments c, departments d where d.departmentName = ? AND c.departmentId = d.id";
 
     //language=SQL
     private final String SQL_SEARCH_BY_TEMPLATE = "SELECT employers.fullName FROM employers WHERE fullName LIKE ?";
+
+    //language=SQL
+    private final String SQL_DEPARTMENT_LIST = "SELECT departmentName FROM departments";
 
     private Connection connection;
 
@@ -31,17 +31,32 @@ public class UniversityDaoImpl implements UniversityDao {
         this.connection = connection;
     }
 
+    public ArrayList<String> departmentsNames() {
+        ArrayList<String> list = new ArrayList<>();
+        try {
+            Statement statement = connection.createStatement();
+            //statement.execute(SQL_DEPARTMENT_LIST);
+            ResultSet resultSet = statement.executeQuery(SQL_DEPARTMENT_LIST);
+            while (resultSet.next()) {
+                list.add(resultSet.getString("departmentName"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
     @Override
     public void headOfDepartment(String departmantName) {
         System.out.println("Head of " + departmantName + " is:");
-        resultSetTemplate(departmantName, SQL_HEAD_OF_DEPARTMANT,"fullName");
+        resultSetTemplate(departmantName, SQL_HEAD_OF_DEPARTMENT,"fullName");
     }
 
     @Override
     public void departmantStatistic(String departmantName) {
         System.out.println("Statistics by " + departmantName + ":");
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement(SQL_DEPARTMANT_STATISTIC);
+            PreparedStatement preparedStatement = connection.prepareStatement(SQL_DEPARTMENT_STATISTIC);
             preparedStatement.setString(1, departmantName);
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
@@ -55,13 +70,13 @@ public class UniversityDaoImpl implements UniversityDao {
     @Override
     public void avarageSalaryOfDepartmant(String departmantName) {
         System.out.print("Average salary of " + departmantName + " is: ");
-        resultSetTemplate(departmantName,SQL_AVARAGE_SALARY_OF_DEPARTMANT,"average");
+        resultSetTemplate(departmantName, SQL_AVERAGE_SALARY_OF_DEPARTMENT,"average");
     }
 
     @Override
     public void countOfEmployye(String departmantName) {
         System.out.print("Count of employers in " + departmantName + " is: ");
-        resultSetTemplate(departmantName,SQL_COUNT_OF_EMPLOYEERS,"count");
+        resultSetTemplate(departmantName, SQL_COUNT_OF_EMPLOYERS,"count");
     }
 
     @Override
